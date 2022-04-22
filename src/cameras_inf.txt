@@ -1,0 +1,5 @@
+# Camera list with one line of data per camera:
+#   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[fx, fy, cx, cy, k1, k2, p1, p2, k3, k4, k5, k6]
+# Number of cameras: X
+# See also: http://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+# https://github.com/colmap/colmap/blob/master/src/base/camera_models.h
