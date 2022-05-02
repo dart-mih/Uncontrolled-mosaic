@@ -169,7 +169,7 @@ beta - угол поворота относительно Oy (в градуса�
 gamma - угол поворота относительно Oz (в градусах).
 point_rotate_x - координата точки, относительно которой происходит поворот картинки
 point_rotate_y - координата точки, относительно которой происходит поворот картинки
-f - фокальное расстояние камеры.
+f - Расстояние до камеры (в пикселях изображения).
 */
 void rotateImage(const Mat& image, Mat& result, double alpha, double beta, double gamma, 
     double point_rotate_x, double point_rotate_y, double f) {
@@ -240,7 +240,9 @@ int main() {
 
     PhotoInf correcting_info = photos_inf[2];
 
-    double focal_distance = camera_inf.fx;
+    double pix_in_one_meter =  (camera_inf.width * 0.4) / (abs(photos_inf[2].longitude - photos_inf[3].longitude) * 111134.86); // Примерно пикселей в одном метре.
+    double distance = photos_inf[2].altBaro * pix_in_one_meter; // Примерная дистанция до камеры.
+    printf("Distance: %lf\n", distance);
 
     for (int i = 2; i < num_photos; i++) {
         Mat image = imread(src + photos_inf[i].name);
@@ -251,15 +253,12 @@ int main() {
         Mat normalized_image;
 
         printf("resize_coeff: %f\n", resize_coeff);
-        printf("rotate_x_coeff: %lf\n", -(correcting_info.roll - photos_inf[i].roll));
-        printf("rotate_y_coeff: %lf\n", -(correcting_info.pitch - photos_inf[i].pitch));
-        printf("rotate_z_coeff: %lf\n", -(correcting_info.yaw - photos_inf[i].yaw));
 
         resize(image, resized_image, Size((int)(image.cols * resize_coeff), (int)(image.rows * resize_coeff)), INTER_LINEAR);
 
-        rotateImage(resized_image, normalized_image, -(correcting_info.roll - photos_inf[i].roll), 
-            -(correcting_info.pitch - photos_inf[i].pitch), -(correcting_info.yaw - photos_inf[i].yaw), 
-            camera_inf.center_x * resize_coeff, camera_inf.center_y * resize_coeff, focal_distance);
+        rotateImage(resized_image, normalized_image, photos_inf[i].roll, 
+            photos_inf[i].pitch, photos_inf[i].yaw, 
+            camera_inf.center_x * resize_coeff, camera_inf.center_y * resize_coeff, distance);
 
 
         imwrite(output + photos_inf[i].name, normalized_image);
