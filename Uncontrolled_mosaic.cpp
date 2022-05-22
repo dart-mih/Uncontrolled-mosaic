@@ -1,0 +1,103 @@
+﻿// Normalize_aerial_shots.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
+//
+
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+#include "Shots_normalization/Normalization_function.h"
+#include "Shots_normalization/Photo_and_camera_inf.h"
+#include "Shots_normalization/Photo_and_camera_inf_get_func.h"
+
+#include "Overlay_algorithms/JustGPSalg.h"
+
+using namespace std;
+using namespace cv;
+
+void combinePhotos(int num_photos, int num_first_broken_photos, PhotoInf* photos_inf, string path_norm_photos, 
+    Rect* find_positions_images, string res_img_path) {
+    // Найдем размер полотна.
+    Point res_img_left_top = Point(100000, 1000000);
+    Point res_img_right_down = Point(-100000, -1000000);;
+
+    for (int i = 0; i < num_photos - num_first_broken_photos; i++) {
+        if (find_positions_images[i].x < res_img_left_top.x) {
+            res_img_left_top.x = find_positions_images[i].x;
+        }
+        if (find_positions_images[i].y < res_img_left_top.y) {
+            res_img_left_top.y = find_positions_images[i].y;
+        }
+        if (find_positions_images[i].x + find_positions_images[i].width > res_img_right_down.x) {
+            res_img_right_down.x = find_positions_images[i].x + find_positions_images[i].width;
+        }
+        if (find_positions_images[i].y + find_positions_images[i].height > res_img_right_down.y) {
+            res_img_right_down.y = find_positions_images[i].y + find_positions_images[i].height;
+        }
+    }
+
+    // Сместим все картинки.
+    for (int i = 0; i < num_photos - num_first_broken_photos; i++) {
+        find_positions_images[i] -= res_img_left_top;
+    }
+
+    // Теперь найдем размер полотна и создадим его.
+    int res_width = res_img_right_down.x - res_img_left_top.x;
+    int res_height = res_img_right_down.y - res_img_left_top.y;
+
+    Mat one_img = imread(path_norm_photos + photos_inf[num_first_broken_photos].name);
+    Mat result = Mat(res_height, res_width, one_img.type(), Scalar(0, 0, 0));
+
+    // Заполним полотно изображениями.
+    uchar* p_img;
+    uchar* p_res;
+    for (int i = 0; i < num_photos - num_first_broken_photos; i++) {
+        Mat img = imread(path_norm_photos + photos_inf[i + num_first_broken_photos].name);
+        for (int y = 0; y < img.rows; y++) {
+            p_img = img.ptr<uchar>(y);
+            p_res = result.ptr<uchar>(y + find_positions_images[i].y);
+            for (int x = 0; x < img.cols; x++) {
+                if (!(p_img[3 * x] == 0 && p_img[3 * x + 1] == 0 && p_img[3 * x + 2] == 0)) {
+                    p_res[3 * (find_positions_images[i].x + x)] = p_img[3 * x];
+                    p_res[3 * (find_positions_images[i].x + x) + 1] = p_img[3 * x + 1];
+                    p_res[3 * (find_positions_images[i].x + x) + 2] = p_img[3 * x + 2];
+                }
+            }
+        }
+    }
+
+    imwrite(res_img_path, result);
+}
+
+int main() {
+    int num_photos = 40;
+    int num_first_broken_photos = 2; //Количество некорректных фотографий в наборе.
+    int num_channels = 3;
+
+    PhotoInf* photos_inf = new PhotoInf[num_photos];
+    CameraInf camera_inf;
+    string path_src_photos = "Shots_normalization/src/";
+    string  path_norm_photos = "Shots_normalization/result/";
+    string res_img_path = "Result_overlay.jpg";
+    
+    // Получаем информацию об изображениях и камере.
+    getInfoAboutCamera(path_src_photos + "cameras.txt", camera_inf);
+    getInfoAboutPhotos(path_src_photos + "telemetry.txt", num_photos, photos_inf);
+    printInfoAboutPhotos(num_photos, photos_inf);
+    printInfoAboutCamera(camera_inf);
+
+    // Нормализуем изображение.
+    normalizeShots(path_src_photos, path_norm_photos, photos_inf, camera_inf, num_photos, num_first_broken_photos);
+
+    // Будет содержать информацию о позиции каждой картинки на общем полотне.
+    Rect* positions_images = new Rect[num_photos - num_first_broken_photos];
+
+    // Находим положение изображений.
+    justGPSalg(num_photos, num_first_broken_photos, photos_inf, camera_inf, path_norm_photos, positions_images);
+
+    // Совмещаем изображения по найденным позициям.
+    combinePhotos(num_photos, num_first_broken_photos, photos_inf, path_norm_photos, positions_images, 
+        res_img_path);
+
+    delete[] positions_images;
+    delete[] photos_inf;
+    return 0;
+}
