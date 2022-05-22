@@ -11,12 +11,12 @@ using namespace cv;
 
 
 /*
-Генерирует матрицу для преобразования 2d вектора однородной системы координат (x, y, 1) в вектор 3d однородной системы координат (x, y, 0, 1).
-point_rotate_x - координата точки, относительно которой происходит поворот картинки.
-point_rotate_y - координата точки, относительно которой происходит поворот картинки.
+Generates a matrix to convert a 2d vector of a homogeneous coordinate system (x, y, 1) to a 3d vector of a homogeneous coordinate system (x, y, 0, 1).
+point_rotate_x - coordinate of the point relative to which the image is rotated (Ox).
+point_rotate_y - coordinate of the point relative to which the image is rotated (Oy).
 */
 Mat getMatrix2dto3d(double point_rotate_x, double point_rotate_y) {
-    // Проекция 2D -> 3D матриц.
+    // Projection 2D -> 3D matrix.
     Mat A1 = (Mat_<double>(4, 3) <<
         1, 0, -point_rotate_x,
         0, 1, -point_rotate_y,
@@ -26,13 +26,13 @@ Mat getMatrix2dto3d(double point_rotate_x, double point_rotate_y) {
 }
 
 /*
-Генерирует матрицу для поворота 3d вектора однородной системы координат (x, y, z, 1).
-alpha - угол поворота относительно Ox (в градусах).
-beta  - угол поворота относительно Oy (в градусах).
-gamma - угол поворота относительно Oz (в градусах).
-point_rotate_x - координата точки, относительно которой происходит поворот картинки.
-point_rotate_y - координата точки, относительно которой происходит поворот картинки.
-f - расстояние до камеры (в пикселях изображения).
+Generates a matrix for rotating a 3d vector of a homogeneous coordinate system (x, y, z, 1).
+alpha - rotation angle relative to Ox (in degrees).
+beta - rotation angle relative to Oy (in degrees).
+gamma - rotation angle relative to Oz (in degrees).
+point_rotate_x - coordinate of the point relative to which the image is rotated.
+point_rotate_y - coordinate of the point relative to which the image is rotated.
+f - distance to the camera (in image pixels).
 */
 Mat getRotationMatrix3dTo2d(double alpha, double beta, double gamma,
     double point_rotate_x, double point_rotate_y, double f) {
@@ -40,7 +40,7 @@ Mat getRotationMatrix3dTo2d(double alpha, double beta, double gamma,
     beta = beta * CV_PI / 180.;
     gamma = gamma * CV_PI / 180.;
 
-    // Матрицы поворота относительно осей X, Y, и Z.
+    // Rotation matrices around the X, Y, and Z axes.
     Mat RX = (Mat_<double>(4, 4) <<
         1, 0, 0, 0,
         0, cos(alpha), -sin(alpha), 0,
@@ -57,64 +57,65 @@ Mat getRotationMatrix3dTo2d(double alpha, double beta, double gamma,
         0, 0, 1, 0,
         0, 0, 0, 1);
 
-    // Общая матрица всех поворотов (RX, RY, RZ).
+    // General matrix of all rotations (RX, RY, RZ).
     Mat R = RX * RY * RZ;
 
-    // Матрица смещения 
+    // Offset matrix.
     Mat T = (Mat_<double>(4, 4) <<
         1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, f,
         0, 0, 0, 1);
 
-    // Обратная проекция матриц 3D -> 2D.
+    // Back projection matrix 3D -> 2D.
     Mat A2 = (Mat_<double>(3, 4) <<
         f, 0, point_rotate_x, 0,
         0, f, point_rotate_y, 0,
         0, 0, 1, 0);
 
-    // Матрица результирующей трансформации.
+    // The matrix of the resulting transformation.
     return A2 * T * R;
 }
 
 /*
-Поворачивает изображение на заданные углы.
-image - исходная картинка.
-result - исходная картинка после поворота.
-alpha - угол поворота относительно Ox (в градусах).
-beta  - угол поворота относительно Oy (в градусах).
-gamma - угол поворота относительно Oz (в градусах).
-point_rotate_x - координата точки, относительно которой происходит поворот картинки.
-point_rotate_y - координата точки, относительно которой происходит поворот картинки.
-f - расстояние до камеры (в пикселях изображения).
+Rotates the image by the specified angles.
+image - source image.
+result - original image after rotation.
+alpha - rotation angle relative to Ox (in degrees).
+beta - rotation angle relative to Oy (in degrees).
+gamma - rotation angle relative to Oz (in degrees).
+point_rotate_x - coordinate of the point relative to which the image is rotated.
+point_rotate_y - coordinate of the point relative to which the image is rotated.
+f - distance to the camera (in image pixels).
 */
 void rotateImage(const Mat& image, Mat& result, double alpha, double beta, double gamma,
     double point_rotate_x, double point_rotate_y, double f) {
 
-    // Матрица результирующей трансформации.
+    // The matrix of the resulting transformation.
     Mat final_trans_mat = getMatrix2dto3d(point_rotate_x, point_rotate_y);
     final_trans_mat = getRotationMatrix3dTo2d(alpha, beta, gamma, point_rotate_x, point_rotate_y, f) * final_trans_mat;
 
-    // Применяем матричную трансформацию
+    // Applying a matrix transformation.
     warpPerspective(image, result, final_trans_mat, image.size(), INTER_LANCZOS4);
 }
 
 /*
-Получает очень приблизительное расстояние от камеры до поверхности съемки.
-photo_inf - информация об одном кадре дрона.
-next_photo_inf - информация о кадре дрона после photo_inf.
-camera_shot_height - высота одного кадра изображения (в пикселях).
+Gets a very approximate distance from the camera to the shooting surface.
+photo_inf - information about one drone frame.
+next_photo_inf - information about the drone frame after photo_inf frame.
+camera_shot_height - height of one image frame (in pixels).
 */
 double getNormalizationDistance(PhotoInf& photo_inf, PhotoInf& next_photo_inf, int camera_shot_height) {
-    double pix_in_one_meter = (camera_shot_height * 0.3) / (abs(photo_inf.latitude - next_photo_inf.latitude) * 111412); // Примерно пикселей в одном метре.
-    double distance = photo_inf.altBaro * pix_in_one_meter; // Примерная дистанция до камеры.
+    // Approximately pixels in one meter.
+    double pix_in_one_meter = (camera_shot_height * 0.3) / (abs(photo_inf.latitude - next_photo_inf.latitude) * 111412);
+    // Approximate distance to the camera.
+    double distance = photo_inf.altBaro * pix_in_one_meter;
     return distance;
 }
 
 void normalizeShots(string src, string output, PhotoInf* photos_inf, CameraInf& camera_inf,
     int num_photos, int num_first_broken_photos) {
-    // Выбираем фотографию, относительно показателей которой мы будем ресайзить остальные изображения;
-
+    // Select a photo, relative to the indicators of which we will resize the rest of the images;
     PhotoInf correcting_info = photos_inf[num_first_broken_photos];
 
     double distance = getNormalizationDistance(correcting_info, photos_inf[num_first_broken_photos + 1], camera_inf.height);

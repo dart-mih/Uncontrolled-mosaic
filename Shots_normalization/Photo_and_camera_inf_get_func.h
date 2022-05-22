@@ -8,10 +8,10 @@
 using namespace std;
 
 /*
-Считывает всю информацию по каждой фотографии из файла.
-photos_info_path - путь к файлу, содержащему информацию о фотографиях.
-num_images - количество фотографий.
-photos_info_struct - массив структур PhotoInf, на который уже была выделена память заранее.
+Reads all the information for each photo from a file.
+photos_info_path - path to a file containing information about photos.
+num_images - number of photos.
+photos_info_struct - an array of PhotoInf structures, for which memory has already been allocated in advance.
 */
 void getInfoAboutPhotos(std::string photos_info_path, int num_images, PhotoInf* photos_info_struct) {
     std::ifstream photos_info(photos_info_path);
@@ -47,9 +47,9 @@ void getInfoAboutPhotos(std::string photos_info_path, int num_images, PhotoInf* 
 }
 
 /*
-Печатает всю информацию по каждой считанной фотографии.
-num_images - количество считанных фотографий.
-photos_info_struct - массив структур PhotoInf, содержащих информацию о кадрах.
+Prints all the information for each photo read.
+num_images - number of photos read.
+photos_info_struct - an array of PhotoInf structures containing information about frames.
 */
 void printInfoAboutPhotos(int num_images, PhotoInf* photos_info_struct) {
     for (int i = 0; i < num_images; i++) {
@@ -64,9 +64,9 @@ void printInfoAboutPhotos(int num_images, PhotoInf* photos_info_struct) {
 }
 
 /*
-Считывает всю информацию о камере из файла.
-camera_info_path - путь к файлу с информацией о камере.
-camera_info_struct - структура, которая будет содержать считанную информацию о камере.
+Reads all camera information from a file.
+camera_info_path - path to the camera information file.
+camera_info_struct - a structure that will contain the read information about the camera.
 */
 void getInfoAboutCamera(std::string camera_info_path, CameraInf& camera_info_struct) {
     std::ifstream camera_info(camera_info_path);
@@ -110,8 +110,8 @@ void getInfoAboutCamera(std::string camera_info_path, CameraInf& camera_info_str
 }
 
 /*
-Печатает всю считанную информацию о камере.
-camera_info_struct - структура, содержащая считанную информацию о камере.
+Prints all the camera information read.
+camera_info_struct - a structure containing the read information about the camera.
 */
 void printInfoAboutCamera(CameraInf& camera_info_struct) {
     printf("------------------------------------------------\n");

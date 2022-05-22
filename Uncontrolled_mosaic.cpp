@@ -1,7 +1,4 @@
-﻿// Normalize_aerial_shots.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
-
-#include <iostream>
+﻿#include <iostream>
 #include <opencv2/opencv.hpp>
 
 #include "Shots_normalization/Normalization_function.h"
@@ -13,6 +10,15 @@
 using namespace std;
 using namespace cv;
 
+/*
+A function that combines all images into one canvas at the coordinates specified in find_positions_images.
+num_photos - number of photos.
+num_first_broken_photos - number of first pictures that cannot be used for overlay (it is also the index of the first one that can be used).
+photos_inf - array of structures containing information about photos.
+path_norm_photos - path to normalized images.
+find_positions_images - array that contains the positions of each image relative to the first one.
+res_img_path - the path where the result of the combination will be located.
+*/
 void combinePhotos(int num_photos, int num_first_broken_photos, PhotoInf* photos_inf, string path_norm_photos, 
     Rect* find_positions_images, string res_img_path) {
     // Найдем размер полотна.
@@ -69,31 +75,32 @@ void combinePhotos(int num_photos, int num_first_broken_photos, PhotoInf* photos
 
 int main() {
     int num_photos = 40;
-    int num_first_broken_photos = 2; //Количество некорректных фотографий в наборе.
+    int num_first_broken_photos = 2; // The number of first incorrect photos in the set.
     int num_channels = 3;
 
-    PhotoInf* photos_inf = new PhotoInf[num_photos];
-    CameraInf camera_inf;
     string path_src_photos = "Shots_normalization/src/";
     string  path_norm_photos = "Shots_normalization/result/";
     string res_img_path = "Result_overlay.jpg";
+
+    PhotoInf* photos_inf = new PhotoInf[num_photos];
+    CameraInf camera_inf;
     
-    // Получаем информацию об изображениях и камере.
+    // Get information about images and the camera.
     getInfoAboutCamera(path_src_photos + "cameras.txt", camera_inf);
     getInfoAboutPhotos(path_src_photos + "telemetry.txt", num_photos, photos_inf);
     printInfoAboutPhotos(num_photos, photos_inf);
     printInfoAboutCamera(camera_inf);
 
-    // Нормализуем изображение.
+    // Now normalize the image.
     normalizeShots(path_src_photos, path_norm_photos, photos_inf, camera_inf, num_photos, num_first_broken_photos);
 
-    // Будет содержать информацию о позиции каждой картинки на общем полотне.
+    // Will contain information about the position of each image on the general canvas.
     Rect* positions_images = new Rect[num_photos - num_first_broken_photos];
 
-    // Находим положение изображений.
+    // Finding the position of the images.
     justGPSalg(num_photos, num_first_broken_photos, photos_inf, camera_inf, path_norm_photos, positions_images);
 
-    // Совмещаем изображения по найденным позициям.
+    // Combine images according to the found positions.
     combinePhotos(num_photos, num_first_broken_photos, photos_inf, path_norm_photos, positions_images, 
         res_img_path);
 

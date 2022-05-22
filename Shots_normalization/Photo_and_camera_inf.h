@@ -5,16 +5,16 @@
 using namespace std;
 
 /*
-Информация о снятом кадре.
-name - название самого изображения.
-latitude - долгота съемки.
-longitude - широта съемки.
-altBaro - высота съемки в соответствии с показаниями барометра (метры).
-roll - угол наклона камеры при съемке в связанной системе координат.
-pitch - угол наклона камеры при съемке в связанной системе координат.
-yaw - угол наклона камеры при съемке в связанной системе координат.
-time - время съемки кадра.
-altGPS - высота съемки в соответствии с показаниями GPS (метры)..
+Information about the captured frame.
+name - the name of the image itself.
+latitude - longitude of the survey.
+longitude - survey latitude.
+altBaro - shooting height according to barometer readings (meters).
+roll - camera tilt angle when shooting in the linked coordinate system.
+pitch - camera tilt angle when shooting in the linked coordinate system.
+yaw - camera tilt angle when shooting in the linked coordinate system.
+time - the time the frame was taken.
+altGPS - shooting height according to GPS readings (meters).
 */
 struct PhotoInf {
     string name;
@@ -32,17 +32,17 @@ struct PhotoInf {
 };
 
 /*
-Информация о камере.
+Information about the camera.
 OPENCV_FULL camera parameters:
-camera_id - уникальный идентификатор среди камер снимавших одну сцену.
+camera_id - a unique identifier among cameras filming the same scene.
 model == OPENCV_FULL
-width - ширина кадра в пикселях.
-height - высота кадра в пикселях.
-fx - фокальное расстояние 1.
-fy - фокальное расстояние 2.
-center_x - реальная позиция центра камеры на устройстве.
-center_y - реальная позиция центра камеры на устройстве.
-Все остальные параметры - коэффициенты искажения фотоаппарата, см.:
+width - frame width in pixels.
+height - frame height in pixels.
+fx - focal length 1.
+fy - focal length 2.
+center_x - actual position of the camera center on the device.
+center_y - actual position of the camera center on the device.
+All other parameters are camera distortion coefficients, see:
 https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
 */
 struct CameraInf {
