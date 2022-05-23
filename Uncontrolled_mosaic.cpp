@@ -17,7 +17,7 @@ using namespace cv;
 int main() {
     // Parameters that select the algorithm for overlaying images, combining them, and whether to normalize images at all.
     int choosen_alg = 1;
-    int choosen_combine_photos_func = 2;
+    int choosen_combine_photos_func = 1;
     bool normalize_images = 0;
     // Write info about algotithms in file or console.
     bool write_in_file = 0;
@@ -35,7 +35,7 @@ int main() {
     int num_channels = 3;
 
     string path_src_photos = "Shots_normalization/src/";
-    string  path_norm_photos = "Shots_normalization/result/";
+    string path_norm_photos = "Shots_normalization/result/";
     string res_img_path = "Result_overlay.jpg";
 
     PhotoInf* photos_inf = new PhotoInf[num_photos];
@@ -71,8 +71,7 @@ int main() {
 
         Point relative_pos;
         if (choosen_alg == 1) {
-            relative_pos = justGPSalg(first_img, second_img, photos_inf[i - 1], photos_inf[i], camera_inf, 
-                norm_distance, path_norm_photos, positions_images);
+            relative_pos = justGPSalg(first_img, second_img, photos_inf[i - 1], photos_inf[i], camera_inf, norm_distance);
         } else {
             relative_pos = pixelCompareAlg(first_img, second_img, photos_inf[i - 1], photos_inf[i]);
         }

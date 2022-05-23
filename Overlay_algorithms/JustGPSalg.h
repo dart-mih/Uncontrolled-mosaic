@@ -24,7 +24,7 @@ Point findPositionOfCameraAfterNormalization(PhotoInf& img, CameraInf& camera_in
     Mat rotation_matrix = getRotationMatrix3dTo2d(img.roll, img.pitch, img.yaw,
         camera_inf.center_x * resize_coeff, camera_inf.center_y * resize_coeff, norm_distance);
 
-    Mat camera_start_vec = (Mat_<double>(4, 1) << img_width / 2, img_height / 2, norm_distance, 1);
+    Mat camera_start_vec = (Mat_<double>(4, 1) << 0, 0, norm_distance, 1);
     Mat camera_after_vec = rotation_matrix * camera_start_vec;
 
     Point camera_after_pos = Point(camera_after_vec.at<double>(0) / camera_after_vec.at<double>(2),
@@ -67,11 +67,9 @@ first_photo_inf - structure with information about first picture.
 second_photo_inf - structure with information about second picture.
 camera_inf - structure containing camera information.
 norm_distance - distance from the camera to the image used in normalization (in pixels).
-path_norm_photos - path to normalized images.
-positions_images - an allocated array that will contain after the algorithm the positions of each image relative to the first one.
 */
 Point justGPSalg(Mat& first_img, Mat& second_img, PhotoInf& first_photo_inf, PhotoInf& second_photo_inf, 
-    CameraInf& camera_inf, double norm_distance, string path_norm_photos, Rect* positions_images) {
+    CameraInf& camera_inf, double norm_distance) {
     // Finding the position of the camera after rotating the first image.
     Point pos_camera_start_first = findPositionOfCameraAfterNormalization(first_photo_inf, camera_inf,
         first_img.cols, first_img.rows, norm_distance);
