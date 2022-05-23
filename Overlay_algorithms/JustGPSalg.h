@@ -24,7 +24,7 @@ Point findPositionOfCameraAfterNormalization(PhotoInf& img, CameraInf& camera_in
     Mat rotation_matrix = getRotationMatrix3dTo2d(img.roll, img.pitch, img.yaw,
         camera_inf.center_x * resize_coeff, camera_inf.center_y * resize_coeff, norm_distance);
 
-    Mat camera_start_vec = (Mat_<double>(4, 1) << img_width / 2, img_height / 2, -norm_distance, 1);
+    Mat camera_start_vec = (Mat_<double>(4, 1) << img_width / 2, img_height / 2, norm_distance, 1);
     Mat camera_after_vec = rotation_matrix * camera_start_vec;
 
     Point camera_after_pos = Point(camera_after_vec.at<double>(0) / camera_after_vec.at<double>(2),

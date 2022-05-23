@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include <opencv2/opencv.hpp>
 
 #include "Shots_normalization/PhotoAndCameraInf.h"
@@ -57,6 +58,9 @@ void combinePhotos(int num_photos, int num_first_broken_photos, PhotoInf* photos
     uchar* p_img;
     uchar* p_res;
     for (int i = 0; i < num_photos - num_first_broken_photos; i++) {
+        // Time operation
+        unsigned int start_time = clock();
+        //
         Mat img = imread(path_norm_photos + photos_inf[i + num_first_broken_photos].name);
         for (int y = 0; y < img.rows; y++) {
             p_img = img.ptr<uchar>(y);
@@ -70,6 +74,11 @@ void combinePhotos(int num_photos, int num_first_broken_photos, PhotoInf* photos
                 }
             }
         }
+        // Time operation
+        unsigned int end_time = clock();
+        cout << "Time to write " << num_first_broken_photos + i + 1 << " image on result img:\n--> " 
+            << end_time - start_time << " ms\n";
+        //
     }
 
     imwrite(res_img_path, result);
@@ -77,7 +86,7 @@ void combinePhotos(int num_photos, int num_first_broken_photos, PhotoInf* photos
 
 /*
 A function that combines all images into one canvas at the coordinates specified in find_positions_images.
-All except the last image are not drawn in full size, but only up to the height of the best comparison x2.
+All except the last and first images are not drawn in full size, but only up to the height of the best comparison x2.
 num_photos - number of photos.
 num_first_broken_photos - number of first pictures that cannot be used for overlay (it is also the index of the first one that can be used).
 photos_inf - array of structures containing information about photos.
@@ -118,6 +127,10 @@ void combinePhotosOptimized(int num_photos, int num_first_broken_photos, PhotoIn
     int res_width = res_img_right_down.x - res_img_left_top.x;
     int res_height = res_img_right_down.y - res_img_left_top.y;
 
+    //The very first image is written first.
+    // Time operation
+    unsigned int start_time = clock();
+    //
     Mat one_img = imread(path_norm_photos + photos_inf[num_first_broken_photos].name);
     Mat result = Mat(res_height, res_width, one_img.type(), Scalar(0, 0, 0));
 
@@ -126,28 +139,43 @@ void combinePhotosOptimized(int num_photos, int num_first_broken_photos, PhotoIn
     uchar* p1;
     uchar* p2;
 
-    //The very first image is written first.
-    for (int i = 0; i < find_positions_images[1].y; i++) {
-        p1 = result.ptr<uchar>(i);
-        p2 = one_img.ptr<uchar>(i);
-        for (int j = 0; j < one_img.cols * num_channels; j++) {
-            p1[j] = p2[j];
-        }
-    }
-
     int res_offset_x = find_positions_images[0].x;
     int res_offset_y = find_positions_images[0].y;
 
+    for (int i = 0; i < one_img.rows; i++) {
+        p1 = result.ptr<uchar>(i + res_offset_y);
+        p2 = one_img.ptr<uchar>(i);
+        for (int j = 0; j < one_img.cols * num_channels; j++) {
+            p1[res_offset_x * num_channels + j] = p2[j];
+        }
+    }
+    // Time operation
+    unsigned int end_time = clock();
+    cout << "Time to write " << num_first_broken_photos + 1 << " image on result img:\n--> "
+        << end_time - start_time << " ms\n";
+    //
+
     /*then the rest are written, except for the last*/
     for (int k = 1; k < num_photos - num_first_broken_photos - 1; k++) {
+        // Time operation
+        start_time = clock();
+        //
         one_img = imread(path_norm_photos + photos_inf[num_first_broken_photos + k].name);
 
         res_offset_x = find_positions_images[k].x;
         res_offset_y = find_positions_images[k].y;
 
-        int draw_height = min(one_img.rows, abs(2*(find_positions_images[k].y - find_positions_images[k - 1].y)));
+        int start_draw_height;
+        int end_draw_height;
+        if (find_positions_images[k].y - find_positions_images[k - 1].y >= 0) {
+            start_draw_height = 0;
+            end_draw_height = min(one_img.rows, 2 * (find_positions_images[k].y - find_positions_images[k - 1].y));
+        } else {
+            start_draw_height = max(0, one_img.rows + 2 * (find_positions_images[k].y - find_positions_images[k - 1].y));
+            end_draw_height = one_img.rows;
+        }
 
-        for (int i = 0; i < draw_height; i++) {
+        for (int i = start_draw_height; i < end_draw_height; i++) {
             p1 = result.ptr<uchar>(i + res_offset_y);
             p2 = one_img.ptr<uchar>(i);
             for (int j = 0; j < one_img.cols * num_channels; j += 3) {
@@ -158,8 +186,16 @@ void combinePhotosOptimized(int num_photos, int num_first_broken_photos, PhotoIn
                 }
             }
         }
+        // Time operation
+        end_time = clock();
+        cout << "Time to write " << num_first_broken_photos + k + 1 << " image on result img:\n--> "
+            << end_time - start_time << " ms\n";
+        //
     }
 
+    // Time operation
+    start_time = clock();
+    //
     one_img = imread(path_norm_photos + photos_inf[num_photos - 1].name);
 
     res_offset_x = find_positions_images[num_photos - num_first_broken_photos - 1].x;
@@ -180,5 +216,8 @@ void combinePhotosOptimized(int num_photos, int num_first_broken_photos, PhotoIn
             }
         }
     }
+    end_time = clock();
+    cout << "Time to write " << num_photos << " image on result img:\n--> "
+        << end_time - start_time << " ms\n";
     imwrite(res_img_path, result);
 }

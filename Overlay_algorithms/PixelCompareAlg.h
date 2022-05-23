@@ -20,8 +20,9 @@ first_img - image relative to which the position of the second is searched.
 second_img - frame following the first image.
 first_photo_inf - structure with information about first picture.
 second_photo_inf - structure with information about second picture.
+horizontal_shift - в каком промежутке относительно центра искать смещение по Ox.
 */
-Point pixelCompareAlg(Mat& first_img, Mat& second_img, PhotoInf& first_photo_inf, PhotoInf& second_photo_inf) {
+Point pixelCompareAlg(Mat& first_img, Mat& second_img, PhotoInf& first_photo_inf, PhotoInf& second_photo_inf, int horizontal_shift=50) {
 	int count = 0;
 	int maxcount = 0;
 
@@ -46,8 +47,8 @@ Point pixelCompareAlg(Mat& first_img, Mat& second_img, PhotoInf& first_photo_inf
 	int y_end_limit = (2 * row) / 5;
 
 	if (second_photo_inf.latitude - first_photo_inf.latitude > 0) {
-		y_start_limit = (3 * row) / 5;
-		y_end_limit = (3 * row) / 4;
+		y_start_limit = -(2 * row) / 5;
+		y_end_limit = -row / 4;
 	}
 
 	int chanels = first_img.channels();
@@ -65,8 +66,8 @@ Point pixelCompareAlg(Mat& first_img, Mat& second_img, PhotoInf& first_photo_inf
 	for (int k = y_start_limit; k < y_end_limit; k += 3) {
 		count = 0;
 		for (int i = 0; i < row - 3; i += 3) {
-			if (k + i + 3 >= row) {
-				break;
+			if ((k + i < 0) || (k + i + 3 >= row)) {
+				continue;
 			}
 			p10 = first_img.ptr<uchar>(k + i);
 			p11 = first_img.ptr<uchar>(k + i + 1);
@@ -117,14 +118,11 @@ Point pixelCompareAlg(Mat& first_img, Mat& second_img, PhotoInf& first_photo_inf
 	}
 	// Here, the best horizontal match is sought with the new found height.
 	// l - horizontal shift.
-	for (int l = -50; l < 50; l++)
-	{
+	for (int l = -horizontal_shift; l < horizontal_shift; l++) {
 		count = 0;
-		for (int i = 0; i < row - 3; i += 3)
-		{
-			if ((relative_pos.y) + i + 3 >= row)
-			{
-				break;
+		for (int i = 0; i < row - 3; i += 3) {
+			if ((relative_pos.y + i < 0) || ((relative_pos.y) + i + 3) >= row) {
+				continue;
 			}
 			p10 = first_img.ptr<uchar>(relative_pos.y + i);
 			p11 = first_img.ptr<uchar>(relative_pos.y + i + 1);
@@ -133,11 +131,9 @@ Point pixelCompareAlg(Mat& first_img, Mat& second_img, PhotoInf& first_photo_inf
 			p21 = second_img.ptr<uchar>(i + 1);
 			p22 = second_img.ptr<uchar>(i + 2);
 
-			for (int j = 0; j < col * chanels; j += 3 * chanels)
-			{
+			for (int j = 0; j < col * chanels; j += 3 * chanels) {
 
-				if (abs(l) * chanels + j + 3 >= col * chanels)
-				{
+				if (abs(l) * chanels + j + 3 >= col * chanels) {
 					break;
 				}
 				int dl1 = 0;
@@ -170,16 +166,12 @@ Point pixelCompareAlg(Mat& first_img, Mat& second_img, PhotoInf& first_photo_inf
 					img11 <= img21 + 10 &&
 					img11 >= img21 - 10 &&
 					img12 <= img22 + 10 &&
-					img12 >= img22 - 10)
-				{
+					img12 >= img22 - 10) {
 					count++;
 				}
-
 			}
-
 		}
-		if (maxcount < count)
-		{
+		if (maxcount < count) {
 			maxcount = count;
 			relative_pos.x = l;
 		}

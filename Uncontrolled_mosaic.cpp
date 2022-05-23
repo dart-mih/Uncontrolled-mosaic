@@ -1,79 +1,35 @@
 ﻿#include <iostream>
+#include <ctime>
 #include <opencv2/opencv.hpp>
 
 #include "Shots_normalization/Normalization_function.h"
-#include "Shots_normalization/Photo_and_camera_inf.h"
-#include "Shots_normalization/Photo_and_camera_inf_get_func.h"
+#include "Shots_normalization/PhotoAndCameraInf.h"
+#include "Shots_normalization/PhotoAndCameraInfGetFunc.h"
 
 #include "Overlay_algorithms/JustGPSalg.h"
+#include "Overlay_algorithms/PixelCompareAlg.h"
+
+#include "combinePhotosAlgs.h"
 
 using namespace std;
 using namespace cv;
 
-/*
-A function that combines all images into one canvas at the coordinates specified in find_positions_images.
-num_photos - number of photos.
-num_first_broken_photos - number of first pictures that cannot be used for overlay (it is also the index of the first one that can be used).
-photos_inf - array of structures containing information about photos.
-path_norm_photos - path to normalized images.
-find_positions_images - array that contains the positions of each image relative to the first one.
-res_img_path - the path where the result of the combination will be located.
-*/
-void combinePhotos(int num_photos, int num_first_broken_photos, PhotoInf* photos_inf, string path_norm_photos, 
-    Rect* find_positions_images, string res_img_path) {
-    // Найдем размер полотна.
-    Point res_img_left_top = Point(100000, 1000000);
-    Point res_img_right_down = Point(-100000, -1000000);;
-
-    for (int i = 0; i < num_photos - num_first_broken_photos; i++) {
-        if (find_positions_images[i].x < res_img_left_top.x) {
-            res_img_left_top.x = find_positions_images[i].x;
-        }
-        if (find_positions_images[i].y < res_img_left_top.y) {
-            res_img_left_top.y = find_positions_images[i].y;
-        }
-        if (find_positions_images[i].x + find_positions_images[i].width > res_img_right_down.x) {
-            res_img_right_down.x = find_positions_images[i].x + find_positions_images[i].width;
-        }
-        if (find_positions_images[i].y + find_positions_images[i].height > res_img_right_down.y) {
-            res_img_right_down.y = find_positions_images[i].y + find_positions_images[i].height;
-        }
-    }
-
-    // Сместим все картинки.
-    for (int i = 0; i < num_photos - num_first_broken_photos; i++) {
-        find_positions_images[i] -= res_img_left_top;
-    }
-
-    // Теперь найдем размер полотна и создадим его.
-    int res_width = res_img_right_down.x - res_img_left_top.x;
-    int res_height = res_img_right_down.y - res_img_left_top.y;
-
-    Mat one_img = imread(path_norm_photos + photos_inf[num_first_broken_photos].name);
-    Mat result = Mat(res_height, res_width, one_img.type(), Scalar(0, 0, 0));
-
-    // Заполним полотно изображениями.
-    uchar* p_img;
-    uchar* p_res;
-    for (int i = 0; i < num_photos - num_first_broken_photos; i++) {
-        Mat img = imread(path_norm_photos + photos_inf[i + num_first_broken_photos].name);
-        for (int y = 0; y < img.rows; y++) {
-            p_img = img.ptr<uchar>(y);
-            p_res = result.ptr<uchar>(y + find_positions_images[i].y);
-            for (int x = 0; x < img.cols; x++) {
-                if (!(p_img[3 * x] == 0 && p_img[3 * x + 1] == 0 && p_img[3 * x + 2] == 0)) {
-                    p_res[3 * (find_positions_images[i].x + x)] = p_img[3 * x];
-                    p_res[3 * (find_positions_images[i].x + x) + 1] = p_img[3 * x + 1];
-                    p_res[3 * (find_positions_images[i].x + x) + 2] = p_img[3 * x + 2];
-                }
-            }
-        }
-    }
-
-    imwrite(res_img_path, result);
-}
-
 int main() {
+    // Parameters that select the algorithm for overlaying images, combining them, and whether to normalize images at all.
+    int choosen_alg = 1;
+    int choosen_combine_photos_func = 2;
+    bool normalize_images = 0;
+    // Write info about algotithms in file or console.
+    bool write_in_file = 0;
+    string path_to_file_to_write_info = "output.txt";
+
+    ofstream file_stream;
+
+    if (write_in_file) {
+        file_stream.open(path_to_file_to_write_info);
+        cout.set_rdbuf(file_stream.rdbuf());
+    }
+
     int num_photos = 40;
     int num_first_broken_photos = 2; // The number of first incorrect photos in the set.
     int num_channels = 3;
@@ -91,20 +47,59 @@ int main() {
     printInfoAboutPhotos(num_photos, photos_inf);
     printInfoAboutCamera(camera_inf);
 
-    // Now normalize the image.
-    normalizeShots(path_src_photos, path_norm_photos, photos_inf, camera_inf, num_photos, num_first_broken_photos);
+    double norm_distance = getNormalizationDistance(photos_inf[num_first_broken_photos], photos_inf[num_first_broken_photos + 1],
+        camera_inf.height);
+
+    if (normalize_images) {
+        // Now normalize the images.
+        for (int i = num_first_broken_photos; i < num_photos; i++) {
+            normalizeShot(path_src_photos, path_norm_photos, photos_inf[i], camera_inf, norm_distance,
+                photos_inf[num_first_broken_photos].altBaro);
+        }
+    }
 
     // Will contain information about the position of each image on the general canvas.
     Rect* positions_images = new Rect[num_photos - num_first_broken_photos];
 
     // Finding the position of the images.
-    justGPSalg(num_photos, num_first_broken_photos, photos_inf, camera_inf, path_norm_photos, positions_images);
+    Mat first_img = imread(path_norm_photos + photos_inf[num_first_broken_photos].name);
+    positions_images[0] = Rect(Point(0, 0), Point(first_img.cols, first_img.rows));
+
+    for (int i = num_first_broken_photos + 1; i < num_photos; i++) {
+        unsigned int start_time = clock();
+        Mat second_img = imread(path_norm_photos + photos_inf[i].name);
+
+        Point relative_pos;
+        if (choosen_alg == 1) {
+            relative_pos = justGPSalg(first_img, second_img, photos_inf[i - 1], photos_inf[i], camera_inf, 
+                norm_distance, path_norm_photos, positions_images);
+        } else {
+            relative_pos = pixelCompareAlg(first_img, second_img, photos_inf[i - 1], photos_inf[i]);
+        }
+        unsigned int end_time = clock();
+
+
+        // Fill the array of positions.
+        positions_images[i - num_first_broken_photos] = Rect(positions_images[i - num_first_broken_photos - 1].x + relative_pos.x,
+            positions_images[i - num_first_broken_photos - 1].y + relative_pos.y, second_img.cols, second_img.rows);
+
+        cout << "Relative pos of " << i + 1 << " image relatively " << i 
+            <<" image:\n--> x=" << relative_pos.x << ", y=" << relative_pos.y << "\n";
+        cout << "--> Time to find pos: " << end_time - start_time << " ms.\n";
+        first_img = second_img;
+    }
 
     // Combine images according to the found positions.
-    combinePhotos(num_photos, num_first_broken_photos, photos_inf, path_norm_photos, positions_images, 
-        res_img_path);
+    if (choosen_combine_photos_func == 1) {
+        combinePhotos(num_photos, num_first_broken_photos, photos_inf, path_norm_photos, positions_images, res_img_path);
+    } else {
+        combinePhotosOptimized(num_photos, num_first_broken_photos, photos_inf, path_norm_photos, positions_images, res_img_path);
+    }
 
     delete[] positions_images;
     delete[] photos_inf;
+    if (write_in_file) {
+        file_stream.close();
+    }
     return 0;
 }
