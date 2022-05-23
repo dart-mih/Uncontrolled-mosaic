@@ -3,7 +3,7 @@
 #include <string>
 #include <fstream>
 
-#include "Photo_and_camera_inf.h"
+#include "PhotoAndCameraInf.h"
 
 using namespace std;
 

@@ -4,7 +4,7 @@
 #include <string>
 #include <opencv2/opencv.hpp>
 
-#include "Photo_and_camera_inf.h"
+#include "PhotoAndCameraInf.h"
 
 using namespace std;
 using namespace cv;
@@ -113,30 +113,30 @@ double getNormalizationDistance(PhotoInf& photo_inf, PhotoInf& next_photo_inf, i
     return distance;
 }
 
-void normalizeShots(string src, string output, PhotoInf* photos_inf, CameraInf& camera_inf,
-    int num_photos, int num_first_broken_photos) {
-    // Select a photo, relative to the indicators of which we will resize the rest of the images;
-    PhotoInf correcting_info = photos_inf[num_first_broken_photos];
+/*
+Normalizes one photo, rotating it to the required angles and writing it with the same name on the output path.
+src - path where the original images are located.
+output - path where the normalized images will be saved.
+photo_inf - structure with information about photo.
+camera_inf - structure containing camera information.
+norm_distance - distance from the camera to the image used in normalization (in pixels).
+distance_meters - distance to which the distance to the image is brought (same for all photos).
+*/
+void normalizeShot(string src, string output, PhotoInf& photo_inf, CameraInf& camera_inf, double norm_distance, double distance_meters) {
+    Mat image = imread(src + photo_inf.name);
 
-    double distance = getNormalizationDistance(correcting_info, photos_inf[num_first_broken_photos + 1], camera_inf.height);
+    float resize_coeff = photo_inf.altBaro / distance_meters;
 
-    for (int i = num_first_broken_photos; i < num_photos; i++) {
-        Mat image = imread(src + photos_inf[i].name);
+    Mat resized_image;
+    Mat normalized_image;
 
-        float resize_coeff = photos_inf[i].altBaro / correcting_info.altBaro;
+    printf("resize_coeff: %f\n", resize_coeff);
 
-        Mat resized_image;
-        Mat normalized_image;
+    resize(image, resized_image, Size((int)(image.cols * resize_coeff), (int)(image.rows * resize_coeff)), INTER_LINEAR);
 
-        printf("resize_coeff: %f\n", resize_coeff);
-
-        resize(image, resized_image, Size((int)(image.cols * resize_coeff), (int)(image.rows * resize_coeff)), INTER_LINEAR);
-
-        rotateImage(resized_image, normalized_image, photos_inf[i].roll,
-            photos_inf[i].pitch, photos_inf[i].yaw,
-            camera_inf.center_x * resize_coeff, camera_inf.center_y * resize_coeff, distance);
+    rotateImage(resized_image, normalized_image, photo_inf.roll, photo_inf.pitch, photo_inf.yaw,
+        camera_inf.center_x * resize_coeff, camera_inf.center_y * resize_coeff, norm_distance);
 
 
-        imwrite(output + photos_inf[i].name, normalized_image);
-    }
+    imwrite(output + photo_inf.name, normalized_image);
 }

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-#include "../Shots_normalization/Photo_and_camera_inf.h"
+#include "../Shots_normalization/PhotoAndCameraInf.h"
 #include "../Shots_normalization/Normalization_function.h"
 
 using namespace std;
@@ -11,24 +11,20 @@ using namespace cv;
 
 /*
 Finds the position of the camera after normalizing the image (because the rotations of the plane affect the position of the camera from which the given image could be taken).
-num_first_broken_photos - number of first pictures that cannot be used for overlay (it is also the index of the first one that can be used).
-photos_inf - array of structures containing information about photos.
+img - structure that stores information about the image, the position of the camera after normalization on which we are looking.
 camera_inf - structure containing camera information.
-img_ind - index of the image in photos_inf, the position of the camera on which we are looking.
 img_width - image width after normalization.
 img_height - image height after normalization.
+norm_distance - distance from the camera to the image used in normalization (in pixels).
 */
-Point findPositionOfCameraAfterNormalization(int num_first_broken_photos, PhotoInf* photos_inf, CameraInf& camera_inf,
-    int img_ind, int img_width, int img_height) {
-    double distance = getNormalizationDistance(photos_inf[num_first_broken_photos], photos_inf[num_first_broken_photos + 1], 
-        camera_inf.height);
+Point findPositionOfCameraAfterNormalization(PhotoInf& img, CameraInf& camera_inf,
+    int img_width, int img_height, double norm_distance) {
     double resize_coeff = camera_inf.width / img_width;
 
-    Mat rotation_matrix = getRotationMatrix3dTo2d(photos_inf[img_ind].roll,
-        photos_inf[img_ind].pitch, photos_inf[img_ind].yaw,
-        camera_inf.center_x * resize_coeff, camera_inf.center_y * resize_coeff, distance);
+    Mat rotation_matrix = getRotationMatrix3dTo2d(img.roll, img.pitch, img.yaw,
+        camera_inf.center_x * resize_coeff, camera_inf.center_y * resize_coeff, norm_distance);
 
-    Mat camera_start_vec = (Mat_<double>(4, 1) << img_width / 2, img_height / 2, distance, 1);
+    Mat camera_start_vec = (Mat_<double>(4, 1) << img_width / 2, img_height / 2, -norm_distance, 1);
     Mat camera_after_vec = rotation_matrix * camera_start_vec;
 
     Point camera_after_pos = Point(camera_after_vec.at<double>(0) / camera_after_vec.at<double>(2),
@@ -45,7 +41,7 @@ y_first - camera position on the first photo by Oy.
 x_second - camera position on the second photo by Ox.
 y_second - camera position on the second photo by Oy.
 */
-Point getApproxRelativeDistOfPhotos(PhotoInf first_photo, PhotoInf second_photo, int x_first, int y_first,
+Point getApproxRelativeDistOfPhotos(PhotoInf& first_photo, PhotoInf& second_photo, int x_first, int y_first,
     int x_second, int y_second) {
     double lattitude_to_m_coeff = 111412;
     double longitude_to_m_coeff = 96486;
@@ -65,43 +61,28 @@ Point getApproxRelativeDistOfPhotos(PhotoInf first_photo, PhotoInf second_photo,
 
 /*
 Algorithm for matching images by GPS coordinates of the camera at the time of shooting.
-num_photos - number of photos.
-num_first_broken_photos - number of first pictures that cannot be used for overlay (it is also the index of the first one that can be used).
-photos_inf - array of structures containing information about photos.
+first_img - image relative to which the position of the second is searched.
+second_img - frame following the first image.
+first_photo_inf - structure with information about first picture.
+second_photo_inf - structure with information about second picture.
 camera_inf - structure containing camera information.
+norm_distance - distance from the camera to the image used in normalization (in pixels).
 path_norm_photos - path to normalized images.
 positions_images - an allocated array that will contain after the algorithm the positions of each image relative to the first one.
 */
-void justGPSalg(int num_photos, int num_first_broken_photos, PhotoInf* photos_inf, CameraInf& camera_inf, string path_norm_photos, Rect* positions_images) {
-    Mat first_img = imread(path_norm_photos + photos_inf[num_first_broken_photos].name);
-    positions_images[0] = Rect(Point(0, 0), Point(first_img.cols, first_img.rows));
+Point justGPSalg(Mat& first_img, Mat& second_img, PhotoInf& first_photo_inf, PhotoInf& second_photo_inf, 
+    CameraInf& camera_inf, double norm_distance, string path_norm_photos, Rect* positions_images) {
+    // Finding the position of the camera after rotating the first image.
+    Point pos_camera_start_first = findPositionOfCameraAfterNormalization(first_photo_inf, camera_inf,
+        first_img.cols, first_img.rows, norm_distance);
 
-    // Finding the position of the camera after rotating the image.
-    Point pos_camera_start_first = findPositionOfCameraAfterNormalization(num_first_broken_photos, photos_inf, camera_inf,
-        num_first_broken_photos, first_img.cols, first_img.rows);
+    // Finding the position of the camera after rotating the second image.
+    Point pos_camera_start_second = findPositionOfCameraAfterNormalization(second_photo_inf, camera_inf,
+        second_img.cols, second_img.rows, norm_distance);
 
-    for (int i = num_first_broken_photos + 1; i < num_photos; i++) {
-        Mat second_img = imread(path_norm_photos + photos_inf[i].name);
-
-        // Finding the position of the camera after rotating the image.
-        Point pos_camera_start_second = findPositionOfCameraAfterNormalization(num_first_broken_photos, photos_inf, camera_inf,
-            i, first_img.cols, first_img.rows);
-
-        // Get the relative distance between the photos.
-        Point relative_pos = getApproxRelativeDistOfPhotos(photos_inf[i - 1], photos_inf[i], pos_camera_start_second.x,
-            pos_camera_start_second.y, pos_camera_start_first.x, pos_camera_start_first.y);
-
-        printf("Camera start pos first image %d is (%d, %d)]\n", i, pos_camera_start_first.x, pos_camera_start_first.y);
-        printf("Camera start pos second image %d is (%d, %d)]\n", i + 1, pos_camera_start_second.x, pos_camera_start_second.y);
-
-        // Fill the array of positions.
-        positions_images[i - num_first_broken_photos] = Rect(positions_images[i - num_first_broken_photos - 1].x + relative_pos.x,
-            positions_images[i - num_first_broken_photos - 1].y + relative_pos.y, second_img.cols, second_img.rows);
-
-        printf("Relative pos of second (%d) image relatively first (%d): is x = %d, y = %d \n", i + 1, i, relative_pos.x, relative_pos.y);
-
-        first_img = second_img;
-        pos_camera_start_first = pos_camera_start_second;
-    }
+    // Get the relative distance between the photos.
+    Point relative_pos = getApproxRelativeDistOfPhotos(first_photo_inf, second_photo_inf, pos_camera_start_second.x,
+        pos_camera_start_second.y, pos_camera_start_first.x, pos_camera_start_first.y);
+    return relative_pos;
 }
 
