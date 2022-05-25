@@ -8,6 +8,8 @@
 
 #include "Overlay_algorithms/JustGPSalg.h"
 #include "Overlay_algorithms/PixelCompareAlg.h"
+#include "Overlay_algorithms/ColorChangeCompareAlg.h"
+#include "Overlay_algorithms/CompareAndGPS.h"
 
 #include "combinePhotosAlgs.h"
 
@@ -16,7 +18,7 @@ using namespace cv;
 
 int main() {
     // Parameters that select the algorithm for overlaying images, combining them, and whether to normalize images at all.
-    int choosen_alg = 1;
+    int choosen_alg = 5;
     int choosen_combine_photos_func = 1;
     bool normalize_images = 0;
     // Write info about algotithms in file or console.
@@ -72,11 +74,37 @@ int main() {
         Point relative_pos;
         if (choosen_alg == 1) {
             relative_pos = justGPSalg(first_img, second_img, photos_inf[i - 1], photos_inf[i], camera_inf, norm_distance);
-        } else {
-            relative_pos = pixelCompareAlg(first_img, second_img, photos_inf[i - 1], photos_inf[i]);
         }
-        unsigned int end_time = clock();
+        else if ((choosen_alg == 2) || (choosen_alg == 3) || (choosen_alg == 4)) {
+            int row = min(first_img.rows, second_img.rows);
+            int col = min(first_img.cols, second_img.cols);
 
+            // Choice of area of interest y.
+            int cent_y = (13. / 40) * row;
+
+            if (photos_inf[i].latitude - photos_inf[i - 1].latitude > 0) {
+                cent_y = -(13. / 40) * row;
+            }
+
+            Point center_search_pos = Point(0, cent_y);
+            int vertical_shift = (3. / 40) * row;
+            int horizontal_shift = 50;
+            if (choosen_alg == 2) {
+                relative_pos = pixelCompareAlg(first_img, second_img, photos_inf[i - 1], photos_inf[i], vertical_shift,
+                    horizontal_shift, center_search_pos);
+            } else if (choosen_alg == 3) {
+                relative_pos = greyscaleCompareAlg(first_img, second_img, photos_inf[i - 1], photos_inf[i], vertical_shift,
+                    horizontal_shift, center_search_pos);
+            }
+            else {
+                relative_pos = hsvCompareAlg(first_img, second_img, photos_inf[i - 1], photos_inf[i], vertical_shift,
+                    horizontal_shift, center_search_pos);
+            }
+        } else {
+            relative_pos = compareAndGPSalg(first_img, second_img, photos_inf[i - 1], photos_inf[i], camera_inf, norm_distance);
+        }
+
+        unsigned int end_time = clock();
 
         // Fill the array of positions.
         positions_images[i - num_first_broken_photos] = Rect(positions_images[i - num_first_broken_photos - 1].x + relative_pos.x,
@@ -94,7 +122,6 @@ int main() {
     } else {
         combinePhotosOptimized(num_photos, num_first_broken_photos, photos_inf, path_norm_photos, positions_images, res_img_path);
     }
-
     delete[] positions_images;
     delete[] photos_inf;
     if (write_in_file) {
