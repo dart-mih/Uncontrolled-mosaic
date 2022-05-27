@@ -1,72 +1,72 @@
 Relative pos of 27 image relatively 26 image:
---> x=-1, y=-999
---> Time to find pos: 10297 ms.
+--> x=-11, y=-998
+--> Time to find pos: 9578 ms.
 Relative pos of 28 image relatively 27 image:
---> x=-49, y=-1176
---> Time to find pos: 9882 ms.
+--> x=124, y=-998
+--> Time to find pos: 11735 ms.
 Relative pos of 29 image relatively 28 image:
---> x=-38, y=-1130
---> Time to find pos: 10163 ms.
+--> x=40, y=-1114
+--> Time to find pos: 11951 ms.
 Relative pos of 30 image relatively 29 image:
---> x=-44, y=-1192
---> Time to find pos: 9929 ms.
+--> x=88, y=-1009
+--> Time to find pos: 11837 ms.
 Relative pos of 31 image relatively 30 image:
---> x=0, y=-1117
---> Time to find pos: 10135 ms.
+--> x=-5, y=-1108
+--> Time to find pos: 11844 ms.
 Relative pos of 32 image relatively 31 image:
---> x=3, y=-1009
---> Time to find pos: 10428 ms.
+--> x=0, y=-1009
+--> Time to find pos: 11851 ms.
 Relative pos of 33 image relatively 32 image:
---> x=-50, y=-1002
---> Time to find pos: 10475 ms.
+--> x=94, y=-1001
+--> Time to find pos: 12026 ms.
 Relative pos of 34 image relatively 33 image:
---> x=-28, y=-1002
---> Time to find pos: 10388 ms.
+--> x=28, y=-1001
+--> Time to find pos: 12053 ms.
 Relative pos of 35 image relatively 34 image:
---> x=-49, y=-993
---> Time to find pos: 10131 ms.
+--> x=160, y=-993
+--> Time to find pos: 11663 ms.
 Relative pos of 36 image relatively 35 image:
---> x=-50, y=-993
---> Time to find pos: 10731 ms.
+--> x=100, y=-993
+--> Time to find pos: 11222 ms.
 Relative pos of 37 image relatively 36 image:
---> x=4, y=-1012
---> Time to find pos: 10968 ms.
+--> x=-11, y=-1005
+--> Time to find pos: 11439 ms.
 Relative pos of 38 image relatively 37 image:
---> x=-50, y=-994
---> Time to find pos: 11029 ms.
+--> x=94, y=-996
+--> Time to find pos: 12413 ms.
 Relative pos of 39 image relatively 38 image:
---> x=-38, y=-1002
---> Time to find pos: 10986 ms.
+--> x=-2, y=-1001
+--> Time to find pos: 12576 ms.
 Relative pos of 40 image relatively 39 image:
---> x=0, y=-1062
---> Time to find pos: 10874 ms.
+--> x=-14, y=-1001
+--> Time to find pos: 12802 ms.
 Time to write 26 image on result img:
---> 449 ms
+--> 550 ms
 Time to write 27 image on result img:
---> 326 ms
+--> 441 ms
 Time to write 28 image on result img:
---> 331 ms
+--> 450 ms
 Time to write 29 image on result img:
---> 328 ms
+--> 443 ms
 Time to write 30 image on result img:
---> 320 ms
+--> 442 ms
 Time to write 31 image on result img:
---> 321 ms
+--> 447 ms
 Time to write 32 image on result img:
---> 323 ms
+--> 446 ms
 Time to write 33 image on result img:
---> 331 ms
+--> 446 ms
 Time to write 34 image on result img:
---> 325 ms
+--> 449 ms
 Time to write 35 image on result img:
---> 317 ms
+--> 461 ms
 Time to write 36 image on result img:
---> 339 ms
+--> 464 ms
 Time to write 37 image on result img:
---> 324 ms
+--> 438 ms
 Time to write 38 image on result img:
---> 341 ms
+--> 485 ms
 Time to write 39 image on result img:
---> 345 ms
+--> 480 ms
 Time to write 40 image on result img:
---> 373 ms
+--> 484 ms
