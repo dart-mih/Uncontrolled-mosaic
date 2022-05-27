@@ -33,7 +33,7 @@
 
 Внутри основного файла проекта Uncontrolled_mosaic.cpp (в самом начале функции main) располагаются параметры, которые позволяют менять формат его работы:
 
-    - choosen_alg - выбор алгоритма наложения фотографий (1 - justGPSalg, 2 - pixelCompareAlg)
+    - choosen_alg - выбор алгоритма наложения фотографий (1 - justGPSalg, 2 - pixelCompareAlg, 3 - greyscaleCompareAlg, 4 - hsvCompareAlg, 5 - compareAndGPSalg).
     - choosen_combine_photos_func - как совмещать фотографии по позициям (1 - combinePhotos, 2 - combinePhotosOptimized).
     - normalize_images - запускать ли алгоритм нормализации изображений или нет (0 или 1 соответственно, если изображения уже нормализованы и расположены в папке Shoots_normalization/result, то стоит указать 0, так как алгоритм просто дважды сделает одно и то же).
     - write_in_file - если 1, то вся информация по времени нахождения расположения картинок/наложения их на полотно будет записана в файл, если 0, то в консоль.
