@@ -88,7 +88,7 @@ int main() {
 
             Point center_search_pos = Point(0, cent_y);
             int vertical_shift = (3. / 40) * row;
-            int horizontal_shift = 50;
+            int horizontal_shift = 500;
             if (choosen_alg == 2) {
                 relative_pos = pixelCompareAlg(first_img, second_img, photos_inf[i - 1], photos_inf[i], vertical_shift,
                     horizontal_shift, center_search_pos);
