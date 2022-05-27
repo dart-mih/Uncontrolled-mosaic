@@ -18,9 +18,9 @@ using namespace cv;
 
 int main() {
     // Parameters that select the algorithm for overlaying images, combining them, and whether to normalize images at all.
-    int choosen_alg = -1;
-    int choosen_combine_photos_func = -1;
-    bool normalize_images = 1;
+    int choosen_alg = 2;
+    int choosen_combine_photos_func = 2;
+    bool normalize_images = 0;
     // Write info about algotithms in file or console.
     bool write_in_file = 0;
     string path_to_file_to_write_info = "output.txt";
