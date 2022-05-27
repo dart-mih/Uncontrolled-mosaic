@@ -4,7 +4,7 @@
 #include <opencv2/opencv.hpp>
 
 #include "../Shots_normalization/PhotoAndCameraInf.h"
-#include "../Shots_normalization/Normalization_function.h"
+#include "../Shots_normalization/NormalizationFunction.h"
 #include "PixelCompareAlg.h"
 #include "JustGPSalg.h"
 

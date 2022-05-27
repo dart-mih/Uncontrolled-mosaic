@@ -4,7 +4,6 @@
 #include <opencv2/opencv.hpp>
 
 #include "../Shots_normalization/PhotoAndCameraInf.h"
-#include "../Shots_normalization/Normalization_function.h"
 #include "PixelCompareAlg.h"
 
 using namespace std;

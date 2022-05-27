@@ -2,7 +2,7 @@
 #include <ctime>
 #include <opencv2/opencv.hpp>
 
-#include "Shots_normalization/Normalization_function.h"
+#include "Shots_normalization/NormalizationFunction.h"
 #include "Shots_normalization/PhotoAndCameraInf.h"
 #include "Shots_normalization/PhotoAndCameraInfGetFunc.h"
 
@@ -11,16 +11,16 @@
 #include "Overlay_algorithms/ColorChangeCompareAlg.h"
 #include "Overlay_algorithms/CompareAndGPS.h"
 
-#include "combinePhotosAlgs.h"
+#include "CombinePhotosAlgs.h"
 
 using namespace std;
 using namespace cv;
 
 int main() {
     // Parameters that select the algorithm for overlaying images, combining them, and whether to normalize images at all.
-    int choosen_alg = 5;
-    int choosen_combine_photos_func = 1;
-    bool normalize_images = 0;
+    int choosen_alg = -1;
+    int choosen_combine_photos_func = -1;
+    bool normalize_images = 1;
     // Write info about algotithms in file or console.
     bool write_in_file = 0;
     string path_to_file_to_write_info = "output.txt";
@@ -100,7 +100,7 @@ int main() {
                 relative_pos = hsvCompareAlg(first_img, second_img, photos_inf[i - 1], photos_inf[i], vertical_shift,
                     horizontal_shift, center_search_pos);
             }
-        } else {
+        } else if (choosen_alg == 5) {
             relative_pos = compareAndGPSalg(first_img, second_img, photos_inf[i - 1], photos_inf[i], camera_inf, norm_distance);
         }
 
@@ -119,7 +119,7 @@ int main() {
     // Combine images according to the found positions.
     if (choosen_combine_photos_func == 1) {
         combinePhotos(num_photos, num_first_broken_photos, photos_inf, path_norm_photos, positions_images, res_img_path);
-    } else {
+    } else if (choosen_combine_photos_func == 2) {
         combinePhotosOptimized(num_photos, num_first_broken_photos, photos_inf, path_norm_photos, positions_images, res_img_path);
     }
     delete[] positions_images;

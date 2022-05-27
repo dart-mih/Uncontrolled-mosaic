@@ -118,7 +118,7 @@ Point pixelCompareAlg(Mat& first_img, Mat& second_img, PhotoInf& first_photo_inf
 	if (relative_pos.y < 0) {
 		i_start = -relative_pos.y;
 	}
-	for (int l = x_start_limit; l < x_end_limit; l++) {
+	for (int l = x_start_limit; l < x_end_limit; l += 3) {
 		count = 0;
 		for (int i = i_start; i < row - 3; i += 3) {
 			if ((relative_pos.y + i + 3) >= row) {
@@ -260,7 +260,7 @@ Point pixelCompareAlgOneChanel(Mat& first_img, Mat& second_img, PhotoInf& first_
 	if (relative_pos.y < 0) {
 		i_start = -relative_pos.y;
 	}
-	for (int l = x_start_limit; l < x_end_limit; l++) {
+	for (int l = x_start_limit; l < x_end_limit; l += 3) {
 		count = 0;
 		for (int i = i_start; i < row - 3; i += 3) {
 			if ((relative_pos.y + i + 3) >= row) {
