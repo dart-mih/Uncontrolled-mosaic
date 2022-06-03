@@ -9,6 +9,24 @@
 using namespace std;
 using namespace cv;
 
+/*
+Returns the rotation matrix around the specified vector by angle a.
+vec - the vector around which the rotation occurs (four-dimensional [homogeneous coordinate system]).
+a - angle of rotation around the vector (in degrees).
+*/
+Mat rotateAroundVec(Mat vec, double a) {
+    a = a * CV_PI / 180.;
+    double x = vec.at<double>(0);
+    double y = vec.at<double>(1);
+    double z = vec.at<double>(2);
+
+    return (Mat_<double>(4, 4) <<
+        cos(a) + (1 - cos(a))*x*x, (1-cos(a))*x*y - sin(a)*z, (1-cos(a))*x*z + sin(a)*y, 0,
+        (1 - cos(a))*x*y + sin(a)*z, cos(a) + (1 - cos(a))*y*y, (1 - cos(a))*z*y - sin(a)*x, 0,
+        (1 - cos(a))*x*z - sin(a)*y, (1 - cos(a))*y*z + sin(a)*x, cos(a) + (1 - cos(a))*z*z, 0,
+        0, 0, 0, 1);
+}
+
 
 /*
 Generates a matrix to convert a 2d vector of a homogeneous coordinate system (x, y, 1) to a 3d vector of a homogeneous coordinate system (x, y, 0, 1).
@@ -27,38 +45,35 @@ Mat getMatrix2dto3d(double point_rotate_x, double point_rotate_y) {
 
 /*
 Generates a matrix for rotating a 3d vector of a homogeneous coordinate system (x, y, z, 1).
-alpha - rotation angle relative to Ox (in degrees).
-beta - rotation angle relative to Oy (in degrees).
-gamma - rotation angle relative to Oz (in degrees).
+roll - rotation angle relative to Ox (in degrees).
+pitch - rotation angle relative to Oy (in degrees).
+yaw - rotation angle relative to Oz (in degrees).
 point_rotate_x - coordinate of the point relative to which the image is rotated.
 point_rotate_y - coordinate of the point relative to which the image is rotated.
 f - distance to the camera (in image pixels).
 */
-Mat getRotationMatrix3dTo2d(double alpha, double beta, double gamma,
+Mat getRotationMatrix3dTo2d(double roll, double pitch, double yaw,
     double point_rotate_x, double point_rotate_y, double f) {
-    alpha = alpha * CV_PI / 180.;
-    beta = beta * CV_PI / 180.;
-    gamma = gamma * CV_PI / 180.;
-
     // Rotation matrices around the X, Y, and Z axes.
-    Mat RX = (Mat_<double>(4, 4) <<
-        1, 0, 0, 0,
-        0, cos(alpha), -sin(alpha), 0,
-        0, sin(alpha), cos(alpha), 0,
-        0, 0, 0, 1);
-    Mat RY = (Mat_<double>(4, 4) <<
-        cos(beta), 0, -sin(beta), 0,
-        0, 1, 0, 0,
-        sin(beta), 0, cos(beta), 0,
-        0, 0, 0, 1);
-    Mat RZ = (Mat_<double>(4, 4) <<
-        cos(gamma), -sin(gamma), 0, 0,
-        sin(gamma), cos(gamma), 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1);
+    Mat ox = (Mat_<double>(4, 1) << 1, 0, 0, 1);
+    Mat oy = (Mat_<double>(4, 1) << 0, 1, 0, 1);
+    Mat oz = (Mat_<double>(4, 1) << 0, 0, 1, 1);
+
+    // First we rotate around oz.
+    Mat yaw_rotate = rotateAroundVec(oz, yaw);
+    ox = yaw_rotate * ox;
+    oy = yaw_rotate * oy;
+
+    // Rotate around oy.
+    Mat pitch_rotate = rotateAroundVec(oy, pitch);
+    ox = pitch_rotate * ox;
+
+    // Rotate around ox.
+    Mat roll_rotate = rotateAroundVec(ox, roll);
 
     // General matrix of all rotations (RX, RY, RZ).
-    Mat R = RX * RY * RZ;
+    Mat R = roll_rotate * pitch_rotate * yaw_rotate;
+    //Mat R = yaw_rotate;
 
     // Offset matrix.
     Mat T = (Mat_<double>(4, 4) <<
@@ -81,19 +96,19 @@ Mat getRotationMatrix3dTo2d(double alpha, double beta, double gamma,
 Rotates the image by the specified angles.
 image - source image.
 result - original image after rotation.
-alpha - rotation angle relative to Ox (in degrees).
-beta - rotation angle relative to Oy (in degrees).
-gamma - rotation angle relative to Oz (in degrees).
+row - rotation angle relative to Ox (in degrees).
+pitch - rotation angle relative to Oy (in degrees).
+yaw - rotation angle relative to Oz (in degrees).
 point_rotate_x - coordinate of the point relative to which the image is rotated.
 point_rotate_y - coordinate of the point relative to which the image is rotated.
 f - distance to the camera (in image pixels).
 */
-void rotateImage(const Mat& image, Mat& result, double alpha, double beta, double gamma,
+void rotateImage(const Mat& image, Mat& result, double row, double pitch, double yaw,
     double point_rotate_x, double point_rotate_y, double f) {
 
     // The matrix of the resulting transformation.
     Mat final_trans_mat = getMatrix2dto3d(point_rotate_x, point_rotate_y);
-    final_trans_mat = getRotationMatrix3dTo2d(alpha, beta, gamma, point_rotate_x, point_rotate_y, f) * final_trans_mat;
+    final_trans_mat = getRotationMatrix3dTo2d(row, pitch, yaw, point_rotate_x, point_rotate_y, f) * final_trans_mat;
 
     // Applying a matrix transformation.
     warpPerspective(image, result, final_trans_mat, image.size(), INTER_LANCZOS4);
@@ -107,7 +122,8 @@ camera_shot_height - height of one image frame (in pixels).
 */
 double getNormalizationDistance(PhotoInf& photo_inf, PhotoInf& next_photo_inf, int camera_shot_height) {
     // Approximately pixels in one meter.
-    double pix_in_one_meter = (camera_shot_height * 0.3) / (abs(photo_inf.latitude - next_photo_inf.latitude) * 111412);
+    //double pix_in_one_meter = (camera_shot_height * 0.3) / (abs(photo_inf.latitude - next_photo_inf.latitude) * 111412);
+    double pix_in_one_meter = 6000 / (2 * photo_inf.altBaro * tan((57.007 / 2) * CV_PI / 180.));
     // Approximate distance to the camera.
     double distance = photo_inf.altBaro * pix_in_one_meter;
     return distance;

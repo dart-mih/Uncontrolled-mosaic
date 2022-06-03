@@ -46,7 +46,8 @@ Point getApproxRelativeDistOfPhotos(PhotoInf& first_photo, PhotoInf& second_phot
     double lattitude_to_m_coeff = 111412;
     double longitude_to_m_coeff = 96486;
 
-    double lattitude_to_pixels = -3330687.8306878;
+    //double lattitude_to_pixels = -3330687.8306878;
+    double lattitude_to_pixels = -2249481.81192;
     double longitude_to_pixels = (lattitude_to_pixels / lattitude_to_m_coeff) * longitude_to_m_coeff;
 
     // Relative position calculation.

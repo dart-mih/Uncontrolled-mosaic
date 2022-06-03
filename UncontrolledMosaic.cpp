@@ -16,11 +16,21 @@
 using namespace std;
 using namespace cv;
 
+Mat maskBlackPixels(Mat& img) {
+    Mat hsv;
+    cvtColor(img, hsv, COLOR_BGR2HSV);
+
+    Mat mask;
+    inRange(hsv, Vec3i{0, 0, 0}, Vec3i{179, 255, 3}, mask);
+    bitwise_not(mask, mask);
+    return mask;
+}
+
 int main() {
     // Parameters that select the algorithm for overlaying images, combining them, and whether to normalize images at all.
-    int choosen_alg = 2;
+    int choosen_alg = 5;
     int choosen_combine_photos_func = 2;
-    bool normalize_images = 0;
+    bool normalize_images = 1;
     // Write info about algotithms in file or console.
     bool write_in_file = 0;
     string path_to_file_to_write_info = "output.txt";
@@ -72,36 +82,38 @@ int main() {
         Mat second_img = imread(path_norm_photos + photos_inf[i].name);
 
         Point relative_pos;
+
+        // Get black pixel masks.
+        Mat mask_first = maskBlackPixels(first_img);
+        Mat mask_second = maskBlackPixels(second_img);
+
         if (choosen_alg == 1) {
             relative_pos = justGPSalg(first_img, second_img, photos_inf[i - 1], photos_inf[i], camera_inf, norm_distance);
-        }
-        else if ((choosen_alg == 2) || (choosen_alg == 3) || (choosen_alg == 4)) {
-            int row = min(first_img.rows, second_img.rows);
-            int col = min(first_img.cols, second_img.cols);
-
+        } else if ((choosen_alg == 2) || (choosen_alg == 3) || (choosen_alg == 4)) {
             // Choice of area of interest y.
-            int cent_y = (13. / 40) * row;
+            int cent_y = (13. / 40) * first_img.rows;
 
             if (photos_inf[i].latitude - photos_inf[i - 1].latitude > 0) {
-                cent_y = -(13. / 40) * row;
+                cent_y = -(13. / 40) * first_img.rows;
             }
 
             Point center_search_pos = Point(0, cent_y);
-            int vertical_shift = (3. / 40) * row;
+            int vertical_shift = (3. / 40) * first_img.rows;
             int horizontal_shift = 500;
+
             if (choosen_alg == 2) {
-                relative_pos = pixelCompareAlg(first_img, second_img, photos_inf[i - 1], photos_inf[i], vertical_shift,
+                relative_pos = pixelCompareAlg(first_img, second_img, mask_first, mask_second, photos_inf[i - 1], photos_inf[i], vertical_shift,
                     horizontal_shift, center_search_pos);
             } else if (choosen_alg == 3) {
-                relative_pos = greyscaleCompareAlg(first_img, second_img, photos_inf[i - 1], photos_inf[i], vertical_shift,
+                relative_pos = greyscaleCompareAlg(first_img, second_img, mask_first, mask_second, photos_inf[i - 1], photos_inf[i], vertical_shift,
                     horizontal_shift, center_search_pos);
             }
             else {
-                relative_pos = hsvCompareAlg(first_img, second_img, photos_inf[i - 1], photos_inf[i], vertical_shift,
+                relative_pos = hsvCompareAlg(first_img, second_img, mask_first, mask_second, photos_inf[i - 1], photos_inf[i], vertical_shift,
                     horizontal_shift, center_search_pos);
             }
         } else if (choosen_alg == 5) {
-            relative_pos = compareAndGPSalg(first_img, second_img, photos_inf[i - 1], photos_inf[i], camera_inf, norm_distance);
+            relative_pos = compareAndGPSalg(first_img, second_img, mask_first, mask_second, photos_inf[i - 1], photos_inf[i], camera_inf, norm_distance);
         }
 
         unsigned int end_time = clock();

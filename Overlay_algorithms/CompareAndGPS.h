@@ -15,19 +15,21 @@ using namespace cv;
 Algorithm for matching images by GPS and refining the position using pixelCompareAlg.
 first_img - image relative to which the position of the second is searched.
 second_img - frame following the first image.
+mask_first - mask, values 255 in which correspond to pixels that will not be taken into account when working with the first image.
+mask_second - mask, values 255 in which correspond to pixels that will not be taken into account when working with the second picture.
 first_photo_inf - structure with information about first picture.
 second_photo_inf - structure with information about second picture.
 vertical_shift - in which interval relative to the center_search_pos to look for the offset along Oy.
 horizontal_shift - in which interval relative to the center_search_pos to look for the offset along Ox.
 */
-Point compareAndGPSalg(Mat& first_img, Mat& second_img, PhotoInf& first_photo_inf, PhotoInf& second_photo_inf,
-	CameraInf& camera_inf, double norm_distance, int vertical_shift = 300, int horizontal_shift = 300) {
+Point compareAndGPSalg(Mat& first_img, Mat& second_img, Mat& mask_first, Mat& mask_second, PhotoInf& first_photo_inf, PhotoInf& second_photo_inf,
+	CameraInf& camera_inf, double norm_distance, int vertical_shift = 500, int horizontal_shift = 500) {
 	int count = 0;
 	int maxcount = 0;
 
 	Point relative_pos = justGPSalg(first_img, second_img, first_photo_inf, second_photo_inf, camera_inf, norm_distance);
 
-	relative_pos = pixelCompareAlg(first_img, second_img, first_photo_inf, second_photo_inf,
+	relative_pos = pixelCompareAlg(first_img, second_img, mask_first, mask_second, first_photo_inf, second_photo_inf,
 		vertical_shift, horizontal_shift, relative_pos);
 	return relative_pos;
 }

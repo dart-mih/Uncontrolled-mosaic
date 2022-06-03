@@ -145,10 +145,20 @@ void algorithmPerfomarmanceEvaluation(OverlayAlgorithmEstimates& results_overlay
 
 int main() {
 	// With the same parameters, the algorithms should have been run.
+	
 	int num_photos = 40;
 	int num_first_broken_photos = 2;
 
-	string path_to_alg_output = "../Results_output/output12.txt";
+	// Write info in file or console.
+	bool write_in_file = 1;
+	string path_to_file_to_write_info = "Performance_res_2.txt";
+	ofstream file_stream;
+	if (write_in_file) {
+		file_stream.open(path_to_file_to_write_info);
+		cout.set_rdbuf(file_stream.rdbuf());
+	}
+
+	string path_to_alg_output = "../Results_output/output42.txt";
 	string path_to_photos = "../Shots_normalization/result/";
 	string path_to_photos_info = "../Shots_normalization/src/telemetry.txt";
 
@@ -169,6 +179,10 @@ int main() {
 	cout << "Stitch algorithm performance results:\n";
 	cout << "Average processing time for writing a photo on the canvas: " << results_overlay_alg.average_process_time_per_photo << "\n";
 	cout << "Total photo stitch time: " << results_overlay_alg.time_to_all_photos << "\n";
+
+	if (write_in_file) {
+		file_stream.close();
+	}
 	
 	return 0;
 }
