@@ -19,15 +19,20 @@ mask_first - mask, values 255 in which correspond to pixels that will not be tak
 mask_second - mask, values 255 in which correspond to pixels that will not be taken into account when working with the second picture.
 first_photo_inf - structure with information about first picture.
 second_photo_inf - structure with information about second picture.
+camera_inf - structure containing camera information.
 vertical_shift - in which interval relative to the center_search_pos to look for the offset along Oy.
 horizontal_shift - in which interval relative to the center_search_pos to look for the offset along Ox.
 */
 Point compareAndGPSalg(Mat& first_img, Mat& second_img, Mat& mask_first, Mat& mask_second, PhotoInf& first_photo_inf, PhotoInf& second_photo_inf,
-	CameraInf& camera_inf, double norm_distance, int vertical_shift = 500, int horizontal_shift = 500) {
+	CameraInf& camera_inf, double resize_ratio, int vertical_shift = 500, int horizontal_shift = 500) {
 	int count = 0;
 	int maxcount = 0;
 
-	Point relative_pos = justGPSalg(first_img, second_img, first_photo_inf, second_photo_inf, camera_inf, norm_distance);
+	Point relative_pos = justGPSalg(first_img.rows * (1. / resize_ratio), second_img.rows * (1. / resize_ratio), 
+		first_photo_inf, second_photo_inf, camera_inf);
+
+	relative_pos.x = relative_pos.x * resize_ratio;
+	relative_pos.y = relative_pos.y * resize_ratio;
 
 	relative_pos = pixelCompareAlg(first_img, second_img, mask_first, mask_second, first_photo_inf, second_photo_inf,
 		vertical_shift, horizontal_shift, relative_pos);

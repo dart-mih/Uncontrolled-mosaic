@@ -40,6 +40,11 @@ Point greyscaleCompareAlg(Mat& first_img, Mat& second_img, Mat& mask_first, Mat&
 	cvtColor(first_img, first_img_greyscale, COLOR_BGR2GRAY);
 	cvtColor(second_img, second_img_greyscale, COLOR_BGR2GRAY);
 
+	// Region histogram equalization.
+	auto clahe = createCLAHE(2.0, Size(8, 8));
+	clahe->apply(first_img_greyscale, first_img_greyscale);
+	clahe->apply(second_img_greyscale, second_img_greyscale);
+
 	Point relative_pos = pixelCompareAlgOneChanel(first_img_greyscale, second_img_greyscale, mask_first, mask_second,
 		first_photo_inf, second_photo_inf, vertical_shift, horizontal_shift, center_search_pos);
 	return relative_pos;

@@ -1,0 +1,177 @@
+Relative pos of 6 image relatively 5 image:
+--> x=-208, y=-1429
+--> Time to find pos: 668 ms.
+Relative pos of 7 image relatively 6 image:
+--> x=-6, y=-1147
+--> Time to find pos: 693 ms.
+Relative pos of 8 image relatively 7 image:
+--> x=-3, y=-1237
+--> Time to find pos: 697 ms.
+Relative pos of 9 image relatively 8 image:
+--> x=246, y=-1083
+--> Time to find pos: 668 ms.
+Relative pos of 10 image relatively 9 image:
+--> x=26, y=-1258
+--> Time to find pos: 657 ms.
+Relative pos of 11 image relatively 10 image:
+--> x=-51, y=-1259
+--> Time to find pos: 659 ms.
+Relative pos of 12 image relatively 11 image:
+--> x=-249, y=-1420
+--> Time to find pos: 678 ms.
+Relative pos of 13 image relatively 12 image:
+--> x=174, y=-1137
+--> Time to find pos: 668 ms.
+Relative pos of 14 image relatively 13 image:
+--> x=30, y=-1186
+--> Time to find pos: 645 ms.
+Relative pos of 15 image relatively 14 image:
+--> x=-547, y=-1584
+--> Time to find pos: 702 ms.
+Relative pos of 16 image relatively 15 image:
+--> x=361, y=-1033
+--> Time to find pos: 693 ms.
+Relative pos of 17 image relatively 16 image:
+--> x=73, y=-1182
+--> Time to find pos: 750 ms.
+Relative pos of 18 image relatively 17 image:
+--> x=80, y=-1294
+--> Time to find pos: 682 ms.
+Relative pos of 19 image relatively 18 image:
+--> x=86, y=-1118
+--> Time to find pos: 643 ms.
+Relative pos of 20 image relatively 19 image:
+--> x=-373, y=-1624
+--> Time to find pos: 680 ms.
+Relative pos of 21 image relatively 20 image:
+--> x=366, y=-948
+--> Time to find pos: 660 ms.
+Relative pos of 22 image relatively 21 image:
+--> x=-134, y=-1374
+--> Time to find pos: 643 ms.
+Relative pos of 23 image relatively 22 image:
+--> x=-53, y=-1290
+--> Time to find pos: 653 ms.
+Relative pos of 24 image relatively 23 image:
+--> x=-4, y=-1232
+--> Time to find pos: 644 ms.
+Relative pos of 25 image relatively 24 image:
+--> x=2800, y=-1301
+--> Time to find pos: 661 ms.
+Relative pos of 26 image relatively 25 image:
+--> x=175, y=1565
+--> Time to find pos: 643 ms.
+Relative pos of 27 image relatively 26 image:
+--> x=-324, y=801
+--> Time to find pos: 674 ms.
+Relative pos of 28 image relatively 27 image:
+--> x=-26, y=1274
+--> Time to find pos: 673 ms.
+Relative pos of 29 image relatively 28 image:
+--> x=-21, y=1253
+--> Time to find pos: 678 ms.
+Relative pos of 30 image relatively 29 image:
+--> x=-51, y=1235
+--> Time to find pos: 686 ms.
+Relative pos of 31 image relatively 30 image:
+--> x=249, y=1596
+--> Time to find pos: 664 ms.
+Relative pos of 32 image relatively 31 image:
+--> x=-353, y=861
+--> Time to find pos: 705 ms.
+Relative pos of 33 image relatively 32 image:
+--> x=-49, y=1274
+--> Time to find pos: 700 ms.
+Relative pos of 34 image relatively 33 image:
+--> x=-328, y=976
+--> Time to find pos: 732 ms.
+Relative pos of 35 image relatively 34 image:
+--> x=713, y=2250
+--> Time to find pos: 667 ms.
+Relative pos of 36 image relatively 35 image:
+--> x=142, y=1512
+--> Time to find pos: 656 ms.
+Relative pos of 37 image relatively 36 image:
+--> x=-599, y=425
+--> Time to find pos: 712 ms.
+Relative pos of 38 image relatively 37 image:
+--> x=478, y=2021
+--> Time to find pos: 682 ms.
+Relative pos of 39 image relatively 38 image:
+--> x=-66, y=1160
+--> Time to find pos: 670 ms.
+Relative pos of 40 image relatively 39 image:
+--> x=184, y=1290
+--> Time to find pos: 658 ms.
+Time to write 5 image on result img:
+--> 578 ms
+Time to write 6 image on result img:
+--> 630 ms
+Time to write 7 image on result img:
+--> 971 ms
+Time to write 8 image on result img:
+--> 835 ms
+Time to write 9 image on result img:
+--> 640 ms
+Time to write 10 image on result img:
+--> 569 ms
+Time to write 11 image on result img:
+--> 579 ms
+Time to write 12 image on result img:
+--> 559 ms
+Time to write 13 image on result img:
+--> 665 ms
+Time to write 14 image on result img:
+--> 568 ms
+Time to write 15 image on result img:
+--> 598 ms
+Time to write 16 image on result img:
+--> 698 ms
+Time to write 17 image on result img:
+--> 689 ms
+Time to write 18 image on result img:
+--> 657 ms
+Time to write 19 image on result img:
+--> 559 ms
+Time to write 20 image on result img:
+--> 625 ms
+Time to write 21 image on result img:
+--> 570 ms
+Time to write 22 image on result img:
+--> 589 ms
+Time to write 23 image on result img:
+--> 607 ms
+Time to write 24 image on result img:
+--> 610 ms
+Time to write 25 image on result img:
+--> 619 ms
+Time to write 26 image on result img:
+--> 554 ms
+Time to write 27 image on result img:
+--> 603 ms
+Time to write 28 image on result img:
+--> 685 ms
+Time to write 29 image on result img:
+--> 583 ms
+Time to write 30 image on result img:
+--> 584 ms
+Time to write 31 image on result img:
+--> 561 ms
+Time to write 32 image on result img:
+--> 606 ms
+Time to write 33 image on result img:
+--> 598 ms
+Time to write 34 image on result img:
+--> 627 ms
+Time to write 35 image on result img:
+--> 559 ms
+Time to write 36 image on result img:
+--> 584 ms
+Time to write 37 image on result img:
+--> 617 ms
+Time to write 38 image on result img:
+--> 587 ms
+Time to write 39 image on result img:
+--> 606 ms
+Time to write 40 image on result img:
+--> 649 ms
